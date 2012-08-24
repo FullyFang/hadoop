@@ -1,0 +1,136 @@
+第一部分，安装单机hadoop 1.0.3
+
+1,安装ssh
+   sudo apt-get install ssh
+
+2,安装rsync 
+   sudo apt-get install rsync
+
+3,配置ssh免密码登录 
+   ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa
+   cat ~/.ssh/id_rsa.pub >>~/.ssh/authorized_keys
+
+  验证是否成功 
+   ssh localhost
+
+4,配置JDK环境和下载hadoop 1.0.3
+
+5,修改hadoop配置文件，指定JDk安装路径
+   vi conf/hadoop-env.sh
+   export JAVA_HOME=/home/app/jdk1.6.0_30
+
+6,修改Hadoop核心配置文件core-site.xml，配置HDFS的地址和端口号
+   vi conf/core-site.xml
+
+   <configuration>
+	    <property>
+	        <name>fs.default.name</name>
+	        <value>hdfs://localhost:9000</value>   
+	    </property>	 
+   </configuration>
+
+7,修改Hadoop中HDFS的配置，修改replication
+   vi conf/hdfs-site.xml
+
+   <configuration>
+	    <property>
+	        <name>dfs.replication</name>	 
+	        <value>1</value>
+	    </property>
+   </configuration>
+
+8,修改Hadoop中MapReduce的配置文件，配置的是JobTracker的地址和端口 
+   vi conf/mapred-site.xml
+
+   <configuration>
+	    <property>
+	        <name>mapred.job.tracker</name>
+	        <value>localhost:9001</value>
+	    </property>
+   </configuration>
+
+
+9,格式化Hadoop的文件系统HDFS
+   bin/hadoop namenode -format
+
+10,启动hadoop
+   bin/start-all.sh
+
+
+最后，验证Hadoop是否安装成功。打开浏览器，分别输入一下网址：
+http://localhost:50030    (MapReduce的Web页面)
+http://localhost:50070    (HDfS的web页面)
+如果都能查看，说明安装成功。
+
+
+
+
+第二部分，安装hadoop集群：
+1，准备2个服务器，分别为
+	机器名		IP地址		作用
+	hadoop.main	192.168.1.102	NameNode，JobTracker，DataNode，TaskTracker
+	hadoop.slave	192.168.1.107	DataNode，TaskTracker
+
+	注：2台主机必须使用相同的用户名运行hadoop
+
+2，分别在这两个主机上，按照单机版的安装方法，安装hadoop
+
+3，在/etc/hostname中修改主机名
+   在/etc/hosts中配置主机名和IP地址度对应关系
+
+   分别在2台主机中，运行以下命令：
+   ping hadoop.main
+   ping hadoop.slave
+
+4，将hadoop.main节点中的~/.ssh/id_rsa.pub文件拷贝到hadoop.slave节点的~/.ssh目录下，然后在hadoop.slave的~/.ssh/目录下运行：
+   cat ./id_rsa.pub >> authorized_keys
+
+   在hadoop.main节点中运行命令: ssh hadoop.slave
+
+5, 修改2台主机的core-site.xml，配置HDFS的地址和端口号
+   vi conf/core-site.xml
+
+   <configuration>
+	    <property>
+	        <name>fs.default.name</name>
+	        <value>hdfs://hadoop.main:9000</value>   
+	    </property>	 
+   </configuration>
+
+6,修改2台主机的MapReduce的配置文件，配置的是JobTracker的地址和端口 
+   vi conf/mapred-site.xml
+
+   <configuration>
+	    <property>
+	        <name>mapred.job.tracker</name>
+	        <value>hadoop.main:9001</value>
+	    </property>
+   </configuration>
+
+7，修改2台主机中的hadoop配置文件masters
+   hadoop.main
+
+8，修改2台主机中的hadoop配置文件slaves
+   hadoop.main
+   hadoop.slave
+
+9，在haddop.main节点运行
+   bin/hadoop namenode -format
+
+10,启动hadoop
+   bin/start-all.sh
+
+
+
+ps: datanode time configuration
+<property>
+ <name>heartbeat.recheck.interval</name>
+ <value>15</value>
+</property>
+
+
+
+
+
+
+
