@@ -5,8 +5,8 @@
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 
-		<title>Weibo Demo</title>
-		<link href="../../css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+		<title>Hadoop</title>
+		<link href="../../3rd/bootstrap/css/bootstrap.css" rel="stylesheet" type="text/css" />
 		<script type="text/javascript" src="../../js/jquery-1.7.2.min.js"></script>
 		<script type="text/javascript" src="../../js/jquery.form.js"></script>
 		<script type="text/javascript" src="../../js/jquery.cookie.js"></script>
@@ -16,27 +16,46 @@
 			});
 		</script>
 	</head>
-
+ 
 	<body>
 		<div class="container">
 			<div class="page-header">
 				<h1>File Upload&Download Demo</h1>
 			</div>
 
-			<form class="well" action="upload_file.php" method="post"
+			<form class="well form-inline" action="upload_file.php" method="post"
 			enctype="multipart/form-data">
 				<label for="file">Filename:</label>
-				<input type="file" name="file" id="file" />
-				<br />
-				<input type="submit" name="submit" value="Submit" />
+				<input class="input-small" type="file" name="file" id="file" />
+				<input class="btn"  type="submit" name="submit" value="Submit" />
 			</form>
 
-			<div>
-				<a href="upload/1.jpg"><img style="height:100px; weight:100px; border: 2px solid #FFCC66" src="upload/1.jpg"></img></a>
-				<a href="upload/1.jpg"><img style="height:100px; weight:100px; border: 2px solid #FFCC66" src="upload/1.jpg"></img></a>
-				<a href="upload/1.jpg"><img style="height:100px; weight:100px; border: 2px solid #FFCC66" src="upload/1.jpg"></img></a>
+			<ul class="thumbnails">
+				<?php
+				exec("java -jar ./listfiles.jar hdfs://hadoop.main:9000/upload/", $files);
+				foreach ($files as $f) {
+					$dst = "./tmp/" . basename($f);
+					$cmd = "java -jar ./getfile.jar ".$f." ".$dst;
+					if(!file_exists($dst))
+						exec($cmd);
+				?>
+				<li class="span3">
+
+					<div class="thumbnail">
+						<a href=<?php echo "$dst"?> class="thumbnail"> <img src=<?php echo "$dst"?> alt=""> </a>
+						<div class="caption">
+							<a class="btn btn-primary" href="del.php?name=<?php echo basename($f)?>">Delete</a>
+						</div>
+					</div>
+				</li>
+				<?php
+				}
+				//print_r($files);
+				?>
 				
-			</div>
+				
+			</ul>
+
 		</div>
 
 	</body>
