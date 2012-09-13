@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/J2SE-1.5">
+		<attributes>
+			<attribute name="owner.project.facets" value="java"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
+	<classpathentry kind="lib" path="/var/www/hadoop/lib/asm-3.3.jar"/>
+	<classpathentry kind="lib" path="/var/www/hadoop/lib/asm-commons-3.3.jar"/>
+	<classpathentry kind="lib" path="/var/www/hadoop/lib/asm-tree-3.3.jar"/>
+	<classpathentry kind="lib" path="/var/www/hadoop/lib/commons-fileupload-1.2.2.jar"/>
+	<classpathentry kind="lib" path="/var/www/hadoop/lib/commons-io-2.0.1.jar"/>
+	<classpathentry kind="lib" path="/var/www/hadoop/lib/commons-lang3-3.1.jar"/>
+	<classpathentry kind="lib" path="/var/www/hadoop/lib/commons-lang-2.4.jar"/>
+	<classpathentry kind="lib" path="/var/www/hadoop/lib/freemarker-2.3.19.jar"/>
+	<classpathentry kind="lib" path="/var/www/hadoop/lib/javassist-3.11.0.GA.jar"/>
+	<classpathentry kind="lib" path="/var/www/hadoop/lib/ognl-3.0.5.jar"/>
+	<classpathentry kind="lib" path="/var/www/hadoop/lib/servlet-api.jar"/>
+	<classpathentry kind="lib" path="/var/www/hadoop/lib/struts2-core-2.3.4.1.jar"/>
+	<classpathentry kind="lib" path="/var/www/hadoop/lib/xwork-core-2.3.4.1.jar"/>
+	<classpathentry kind="output" path="build/classes"/>
+</classpath>
