@@ -1,57 +1,77 @@
 package org.robby;
 
+import java.util.Map;
+
+import com.opensymphony.xwork2.ActionContext;
 import com.opensymphony.xwork2.ActionSupport;
 
-public class UserAction extends ActionSupport{
+public class UserAction extends BaseAction{
 	private static final long serialVersionUID = 1L;
 	String username;
 	String password;
 	String password2;
-	String errmsg;
 
 	HbaseIf hbase;
 	public UserAction(){
 		hbase = HbaseIf.getInstance();
 		username = new String();
 		password = new String();
+
+	}
+	
+	public String Logout() throws Exception {
+		login_user = "";
+		login_id = 0;
+		ActionContext actionContext = ActionContext.getContext();
+		Map session = actionContext.getSession();
+		session.put("login_user", login_user);
+		session.put("login_id", login_id);
+		return SUCCESS;
 	}
 	
 	public String Login() throws Exception {
-		if(username.equals(""))
+		long id = hbase.checkPassword(username, password); 
+		if( id > 0){
+			login_user = username;
+			login_id = id;
+			ActionContext actionContext = ActionContext.getContext();
+			Map session = actionContext.getSession();
+			session.put("login_user", login_user);
+			session.put("login_id", login_id);
+		}else{
+			errmsg = "登录失败！";
 			return ERROR;
-		
-		
-		
-		if(hbase.checkPassword(username, password) > 0)
-			return SUCCESS;
-		else
-			return ERROR;
+		}
+		return SUCCESS;
 	}
 
 	public String Register() throws Exception{
-		System.out.println("user:"+username);
 		if(username.equals(""))
-			return ERROR;
+			return SUCCESS;
 		
 		if(username.length()<4){
 			errmsg = "用户名长度不能小于4位！";
-			return ERROR;
+			return SUCCESS;
 		}
 		
 		if(password.length()<4){
 			errmsg = "密码长度不能小于4位！";
-			return ERROR;
+			return SUCCESS;
 		}
 		
 		if(!password.equals(password2)){
 			errmsg = "密码不一致！";
-			return ERROR;
+			return SUCCESS;
 		}
 		
-		if(hbase.createNewUser(username, password))
+		if(hbase.createNewUser(username, password)){
+			errmsg = "注册成功！";
 			return SUCCESS;
-		else
-			return ERROR;
+		}
+		else{
+			errmsg = "注册失败！";
+			return SUCCESS;
+		}
 	}
 	
 	public String getUsername() {
@@ -81,15 +101,5 @@ public class UserAction extends ActionSupport{
 
 	public void setPassword2(String password2) {
 		this.password2 = password2;
-	}
-
-	public String getErrmsg() {
-		return errmsg;
-	}
-
-	public void setErrmsg(String errmsg) {
-		this.errmsg = errmsg;
-	}
-	
-	
+	}	
 }

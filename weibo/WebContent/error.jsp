@@ -18,34 +18,6 @@
 		</div>
 
 
-
-		<form class="form-horizontal" action="register.do">
-			<legend>注册新用户</legend>
-			<div class="control-group">
-				<label class="control-label">用户名</label>
-				<div class="controls">
-					<input type="text" name="username">
-				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label"">密码</label>
-				<div class="controls">
-					<input type="password" name="password">
-				</div>
-			</div>
-			<div class="control-group">
-				<label class="control-label">重复密码</label>
-				<div class="controls">
-					<input type="password" name="password2">
-				</div>
-			</div>
-			<div class="control-group">
-				<div class="controls">
-					<button type="submit" class="btn">注册</button>
-				</div>
-			</div>
-
-		</form>
 		<s:if test="errmsg.length() > 0">
 			<div class="alert alert-error">
 				<s:property value="errmsg" />
