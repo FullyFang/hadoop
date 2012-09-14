@@ -11,5 +11,15 @@
 		<action name="hello" class="org.robby.Hello">
 			<result>/hello.jsp</result>
 		</action>
+		
+		<action name="login" class="org.robby.UserAction" method="Login">
+			<result>/index.jsp</result>
+			<result name="error">/login.jsp</result>
+		</action>
+		
+		<action name="register" class="org.robby.UserAction" method="Register">
+			<result>/login.jsp</result>
+			<result name="error">/register.jsp</result>
+		</action>
 	</package>
 </struts>
