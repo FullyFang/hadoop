@@ -26,18 +26,11 @@ import org.apache.hadoop.hbase.util.Bytes;
 
 public class HbaseIf {
 	Configuration conf;
-	HTable tab_global, tab_user2id, tab_id2user;
 
 	HbaseIf() {
 		conf = HBaseConfiguration.create();
 	}
 
-	public void init() throws Exception{
-		tab_global = new HTable(conf, "tab_global");
-		tab_user2id = new HTable(conf, "tab_user2id");
-		tab_id2user = new HTable(conf, "tab_id2user");
-	}
-	
 	public void create_table(String name, String col, int version)
 			throws Exception {
 		HBaseAdmin admin = new HBaseAdmin(conf);
@@ -90,8 +83,10 @@ public class HbaseIf {
 
 	public boolean createNewUser(String name, String password)
 			throws IOException {
+		HTable tab_global = new HTable(conf, "tab_global");
+		HTable tab_user2id = new HTable(conf, "tab_user2id");
+		HTable tab_id2user = new HTable(conf, "tab_id2user");
 		
-
 		if (tab_user2id.exists(new Get(name.getBytes())))
 			return false;
 
@@ -116,6 +111,7 @@ public class HbaseIf {
 
 	public String getNameById(long id) {
 		try {
+			HTable tab_id2user = new HTable(conf, "tab_id2user");
 			Result rs = tab_id2user.get(new Get(Bytes.toBytes(id)));
 			KeyValue kv = rs.getColumnLatest(Bytes.toBytes("info"),
 					Bytes.toBytes("username"));
@@ -127,6 +123,7 @@ public class HbaseIf {
 
 	public long getIdByUsername(String username) {
 		try {
+			HTable tab_user2id = new HTable(conf, "tab_user2id");
 			Result rs = searchByRowKey(tab_user2id, username);
 
 			KeyValue kv = rs.getColumnLatest(Bytes.toBytes("info"),
@@ -140,6 +137,8 @@ public class HbaseIf {
 
 	// return 0:not matched >0:match
 	public long checkPassword(String name, String password) throws Exception {
+		HTable tab_user2id = new HTable(conf, "tab_user2id");
+		HTable tab_id2user = new HTable(conf, "tab_id2user");
 		if (!tab_user2id.exists(new Get(name.getBytes())))
 			return 0;
 
