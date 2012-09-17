@@ -2,8 +2,11 @@ package org.robby;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.NavigableMap;
+import java.util.Set;
+import java.util.Vector;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -22,20 +25,16 @@ import org.apache.hadoop.hbase.util.Bytes;
  * 
  * tab_id2user info:username, info:password
  * 
+ * tab_users user:follow user:followd user:inbox user:sent
+ * 
+ * tab_post post:content
+ * 
  * */
 
 public class HbaseIf {
 	Configuration conf;
-	public static HbaseIf hbase = null;
-	
-	public static HbaseIf getInstance(){
-		if(hbase == null)
-			hbase = new HbaseIf();
-		
-		return hbase;
-	}
-	
-	public HbaseIf() {
+
+	HbaseIf() {
 		conf = HBaseConfiguration.create();
 	}
 
@@ -63,6 +62,9 @@ public class HbaseIf {
 		long id = 0;
 		put.add(Bytes.toBytes("param"), Bytes.toBytes("userid"),
 				Bytes.toBytes(id));
+		
+		put.add(Bytes.toBytes("param"), Bytes.toBytes("postid"),
+				Bytes.toBytes(id));
 		HTable ht = new HTable(conf, "tab_global");
 		ht.put(put);
 
@@ -71,6 +73,104 @@ public class HbaseIf {
 
 		// create tab_id2user
 		create_table("tab_id2user", "info", 1);
+		
+		// create tab_users
+		create_table("tab_users", "user", 500);
+	}
+	
+	public Set<String> getFollow(long id) throws Exception{
+		Set<String> set = new HashSet<String>();
+		
+		HTable tab_users = new HTable(conf, "tab_users");
+		Get get = new Get(Bytes.toBytes(id));
+		get.setMaxVersions(500);
+		Result rs = tab_users.get(get);
+		
+		List<KeyValue> list = rs.getColumn(Bytes.toBytes("user"),
+				Bytes.toBytes("follow"));
+		
+		for(KeyValue kv:list){
+			long t = Bytes.toLong(kv.getValue());
+			String name = this.getNameById(t);
+			if(!name.equals(""))
+				set.add(name);
+		}
+		
+		return set;
+	}
+	
+	
+	
+	public boolean unfollow(String oname, String dname) throws Exception{
+		long oid = this.getIdByUsername(oname);
+		long did = this.getIdByUsername(dname);
+		
+		if(oid==0||did==0||oid==did)
+			return false;
+		
+		HTable tab_users = new HTable(conf, "tab_users");
+		//1
+		Get get = new Get(Bytes.toBytes(oid));
+		get.setMaxVersions(500);
+		Result rs = tab_users.get(get);
+		
+		List<KeyValue> list = rs.getColumn(Bytes.toBytes("user"),
+				Bytes.toBytes("follow"));
+		
+		
+		for(KeyValue kv:list){
+			long t = Bytes.toLong(kv.getValue());
+			if(t == did){
+				Delete del = new Delete(Bytes.toBytes(oid));
+				del.deleteColumn(Bytes.toBytes("user"), Bytes.toBytes("follow"), kv.getTimestamp());
+				tab_users.delete(del);
+				break;
+			}
+		}
+
+		
+		return true;
+	}
+	
+	public boolean alreadyFollow(long oid, long did) throws Exception{
+		HTable tab_users = new HTable(conf, "tab_users");
+
+		Get get = new Get(Bytes.toBytes(oid));
+		get.setMaxVersions(500);
+		Result rs = tab_users.get(get);
+
+		List<KeyValue> list = rs.getColumn(Bytes.toBytes("user"),
+				Bytes.toBytes("follow"));
+		
+		for(KeyValue kv:list){
+			if(did == Bytes.toLong(kv.getValue()))
+				return true;
+		}
+		return false;
+	}
+	
+	public boolean follow(String oname, String dname) throws Exception{
+		long oid = this.getIdByUsername(oname);
+		long did = this.getIdByUsername(dname);
+		
+		if(oid==0||did==0||oid==did||alreadyFollow(oid, did))
+			return false;
+		
+		HTable tab_users = new HTable(conf, "tab_users");
+		//1
+		Put put = new Put(Bytes.toBytes(oid));
+		put.add(Bytes.toBytes("user"), Bytes.toBytes("follow"),
+				Bytes.toBytes(did));
+		tab_users.put(put);
+		
+		
+		//2
+		put = new Put(Bytes.toBytes(did));
+		put.add(Bytes.toBytes("user"), Bytes.toBytes("followby"),
+				Bytes.toBytes(oid));
+		tab_users.put(put);
+		
+		return true;
 	}
 
 	public boolean deleteUser(long id) throws Exception{
@@ -175,16 +275,31 @@ public class HbaseIf {
 		return rs;
 	}
 
-	public static void main11(String[] args) throws Exception {
+	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
-		HbaseIf h = new HbaseIf();
+		HbaseIf hbase = new HbaseIf();
+		//hbase.createTables();
 		/*
 		 * h.createTables(); if(h.createNewUser("robby1", "robby"))
 		 * System.out.println("add user success"); else
 		 * System.out.println("add user failed");
 		 */
-		long id = 0;
-		h.checkPassword("user1", "pwd1");
+		/*
+		hbase.createTables();
+		hbase.createNewUser("user1", "pwd1");
+		hbase.createNewUser("user2", "pwd1");
+		hbase.createNewUser("user3", "pwd1");
+		*/
+		
+		
+		hbase.follow("user1", "user2");
+		hbase.follow("user1", "user3");
+		Set<String> v =  hbase.getFollow(1);
+		System.out.println(v.size());
+		for(String s:v){
+			System.out.println(s);
+		}
 	}
+	
 
 }

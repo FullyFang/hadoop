@@ -35,8 +35,18 @@
 				<s:if test="login_user.length() > 0">
 					<a href="login!Logout.do">注销</a>
 				</s:if>
-				
+
 			</form>
+		</div>
+		<div class="container-fluid">
+			<div class="row-fluid">
+				<div class="span8">
+					123
+				</div>
+				<div class="span2">
+					123
+				</div>
+			</div>
 		</div>
 
 	</div>

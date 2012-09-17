@@ -13,7 +13,7 @@ public class UserAction extends BaseAction{
 
 	HbaseIf hbase;
 	public UserAction(){
-		hbase = HbaseIf.getInstance();
+		hbase = new HbaseIf();
 		username = new String();
 		password = new String();
 
