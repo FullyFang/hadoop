@@ -29,7 +29,7 @@ string getrandStr(int len, int mod, bool plus=false)
 void getMsisdn(string &msisdn, string &areacode)
 {
 	string t = getrandStr(4, 10000);
-	msisdn = "1390000" + t;
+	msisdn = "139000" + t;
 
 	areacode = "010";
 
