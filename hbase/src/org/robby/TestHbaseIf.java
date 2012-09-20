@@ -9,7 +9,6 @@ public class TestHbaseIf extends TestCase {
 		hbase = new HbaseIf();
 		
 		hbase.createTables();
-		hbase.init();
 	}
 
 	public void test1() throws Exception{
