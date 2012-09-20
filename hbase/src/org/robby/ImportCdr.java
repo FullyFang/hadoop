@@ -19,10 +19,12 @@ import com.google.common.primitives.Bytes;
 public class ImportCdr {
 
 	HTablePool pool;
+	Vector<Thread> thpool;
 
 	public ImportCdr() {
 		Configuration conf = HBaseConfiguration.create();
 		pool = new HTablePool(conf, 20);
+		thpool = new Vector<Thread>();
 	}
 
 	public class ImportThread extends Thread {
@@ -42,17 +44,18 @@ public class ImportCdr {
 				String f2 = "daddr";
 				String f3 = "dcode";
 				String f4 = "time";
-				
+
 				byte[] bcf = cf.getBytes();
 				byte[] bf0 = f0.getBytes();
 				byte[] bf1 = f1.getBytes();
 				byte[] bf2 = f2.getBytes();
 				byte[] bf3 = f3.getBytes();
 				byte[] bf4 = f4.getBytes();
-				
-				
-				
+
 				HTable tab = (HTable) pool.getTable("tab_cdr");
+				tab.setAutoFlush(false);
+				//tab.setWriteBufferSize(10*1024*1024);
+				
 				for (String f : files) {
 					System.out.println(f);
 					BufferedReader in = new BufferedReader(new FileReader(f));
@@ -68,15 +71,18 @@ public class ImportCdr {
 						p.add(bcf, bf2, arr[2].getBytes());
 						p.add(bcf, bf3, arr[3].getBytes());
 						p.add(bcf, bf4, arr[4].getBytes());
+
+						
 						l.add(p);
-						if(i%100 == 0){
+						if (i % 1000 == 0) {
 							tab.put(l);
 							l = new ArrayList<Put>();
 						}
 						i++;
-						//System.out.println(arr[4]);
+						// System.out.println(arr[4]);
 					}
 					tab.put(l);
+					
 				}
 				tab.close();
 			} catch (Exception e) {
@@ -106,14 +112,34 @@ public class ImportCdr {
 		System.out.println("Thread started");
 		ImportThread t = new ImportThread(this.pool, vec);
 		t.start();
+		thpool.add(t);
 	}
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) throws Exception {
-		ImportCdr im = new ImportCdr();
-		im.createTable();
+	public boolean isAllThreadStopped() {
+		for (Thread t : thpool) {
+			if (t.isAlive())
+				return false;
+		}
+		return true;
+	}
+
+	public void single() throws Exception {
+		// TODO Auto-generated method stub
+		String p = "/home/robby/project/hadoop/testtool/output/";
+		File path = new File(p);
+		String[] list = path.list();
+		int i = 0;
+
+		Vector<String> vec = new Vector<String>();
+		for (String s : list) {
+			vec.add(p + s);
+		}
+		startThread(vec);
+		while (!this.isAllThreadStopped())
+			Thread.sleep(1000);
+	}
+
+	public void multi() throws Exception {
 		// TODO Auto-generated method stub
 		String p = "/home/robby/project/hadoop/testtool/output/";
 		File path = new File(p);
@@ -124,12 +150,23 @@ public class ImportCdr {
 		for (String s : list) {
 			vec.add(p + s);
 			if (i % 10 == 0) {
-				im.startThread(vec);
+				startThread(vec);
 				vec = new Vector<String>();
 			}
 			i++;
 		}
-		im.startThread(vec);
+		startThread(vec);
+		while (!this.isAllThreadStopped())
+			Thread.sleep(1000);
+	}
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) throws Exception {
+		ImportCdr im = new ImportCdr();
+		im.createTable();
+		im.multi();
 	}
 
 }
