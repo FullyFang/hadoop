@@ -41,10 +41,45 @@
 		<div class="container-fluid">
 			<div class="row-fluid">
 				<div class="span8">
-					123
+					<div class="well">
+						<form action="submitpost.do">
+							<textarea rows="3"></textarea>
+							<button type="submit" class="btn">Submit</button>
+						</form>
+					</div>
+					<div class="well">
+						<table class="table">
+							<thead>
+								<tr>
+									<th>发送人</th>
+									<th>内容</th>
+									<th>时间</th>
+								</tr>
+							</thead>
+							<tbody>
+								<s:iterator value="posts" id="Post">
+									<tr>
+										<td><s:property value="sender" /></td>
+										<td><s:property value="content" /></td>
+										<td><s:property value="ts" /></td>
+									</tr>
+								</s:iterator>
+							</tbody>
+						</table>
+					</div>
 				</div>
-				<div class="span2">
-					123
+				<div class="span4 well ">
+					<table class="table">
+						<tbody>
+							<s:iterator value="follow" id="name">
+								<tr>
+									<td><s:property value="name" /></td>
+									<td><a>取消关注</a></td>
+								</tr>
+							</s:iterator>
+						</tbody>
+					</table>
+
 				</div>
 			</div>
 		</div>

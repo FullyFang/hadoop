@@ -10,6 +10,7 @@ public class UserAction extends BaseAction{
 	String username;
 	String password;
 	String password2;
+	String post;
 
 	HbaseIf hbase;
 	public UserAction(){
@@ -42,6 +43,11 @@ public class UserAction extends BaseAction{
 			errmsg = "登录失败！";
 			return ERROR;
 		}
+		return SUCCESS;
+	}
+	
+	public String SubmitPost() throws Exception{
+		errmsg = "微薄发布成功！";
 		return SUCCESS;
 	}
 
@@ -101,5 +107,15 @@ public class UserAction extends BaseAction{
 
 	public void setPassword2(String password2) {
 		this.password2 = password2;
+	}
+
+	public String getPost() {
+		return post;
+	}
+
+	public void setPost(String post) {
+		this.post = post;
 	}	
+	
+	
 }

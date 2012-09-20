@@ -52,6 +52,7 @@ public class HbaseIf {
 		hd.setMaxVersions(version);
 		tableDesc.addFamily(hd);
 		admin.createTable(tableDesc);
+		admin.close();
 	}
 
 	public void createTables() throws Exception {
@@ -96,10 +97,9 @@ public class HbaseIf {
 				set.add(name);
 		}
 		
+		tab_users.close();
 		return set;
 	}
-	
-	
 	
 	public boolean unfollow(String oname, String dname) throws Exception{
 		long oid = this.getIdByUsername(oname);
@@ -128,7 +128,7 @@ public class HbaseIf {
 			}
 		}
 
-		
+		tab_users.close();
 		return true;
 	}
 	
@@ -142,6 +142,7 @@ public class HbaseIf {
 		List<KeyValue> list = rs.getColumn(Bytes.toBytes("user"),
 				Bytes.toBytes("follow"));
 		
+		tab_users.close();
 		for(KeyValue kv:list){
 			if(did == Bytes.toLong(kv.getValue()))
 				return true;
@@ -170,6 +171,7 @@ public class HbaseIf {
 				Bytes.toBytes(oid));
 		tab_users.put(put);
 		
+		tab_users.close();
 		return true;
 	}
 
@@ -186,6 +188,9 @@ public class HbaseIf {
 		
 		del = new Delete(Bytes.toBytes(id));
 		tab_id2user.delete(del);
+		
+		tab_user2id.close();
+		tab_id2user.close();
 		return true;
 	}
 
@@ -214,6 +219,9 @@ public class HbaseIf {
 				Bytes.toBytes(password));
 		tab_id2user.put(put);
 
+		tab_global.close();
+		tab_user2id.close();
+		tab_id2user.close();
 		return true;
 	}
 
@@ -278,7 +286,7 @@ public class HbaseIf {
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
 		HbaseIf hbase = new HbaseIf();
-		//hbase.createTables();
+		hbase.createTables();
 		/*
 		 * h.createTables(); if(h.createNewUser("robby1", "robby"))
 		 * System.out.println("add user success"); else
@@ -292,8 +300,8 @@ public class HbaseIf {
 		*/
 		
 		
-		hbase.follow("user1", "user2");
-		hbase.follow("user1", "user3");
+		//hbase.follow("user1", "user2");
+		//hbase.follow("user1", "user3");
 		Set<String> v =  hbase.getFollow(1);
 		System.out.println(v.size());
 		for(String s:v){
