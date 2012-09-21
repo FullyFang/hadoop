@@ -38,7 +38,7 @@ public class MpLoader {
 	            
 	      // Split CSV line
 	      String [] values = line.toString().split(",");
-	      if(values.length != 4) {
+	      if(values.length != 5) {
 	        return;
 	      }
 	      
@@ -74,12 +74,12 @@ public class MpLoader {
 	   */
 	  public static Job configureJob(Configuration conf, String [] args)
 	  throws IOException {
-	    Path inputPath = new Path(args[0]);
-	    String tableName = args[1];
+	    Path inputPath = new Path("/home/robby/project/hadoop/testtool/output");
+	    String tableName = "tab_cdr";
 	    Job job = new Job(conf, NAME + "_" + tableName);
 	    job.setJarByClass(Uploader.class);
 	    FileInputFormat.setInputPaths(job, inputPath);
-	    job.setInputFormatClass(SequenceFileInputFormat.class);
+	    //job.setInputFormatClass(SequenceFileInputFormat.class);
 	    job.setMapperClass(Uploader.class);
 	    // No reducers.  Just write straight to table.  Call initTableReducerJob
 	    // because it sets up the TableOutputFormat.
@@ -97,11 +97,7 @@ public class MpLoader {
 	  public static void main(String[] args) throws Exception {
 	    Configuration conf = HBaseConfiguration.create();
 	    String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
-	    if(otherArgs.length != 2) {
-	      System.err.println("Wrong number of arguments: " + otherArgs.length);
-	      System.err.println("Usage: " + NAME + " <input> <tablename>");
-	      System.exit(-1);
-	    }
+	    
 	    Job job = configureJob(conf, otherArgs);
 	    System.exit(job.waitForCompletion(true) ? 0 : 1);
 	  }
