@@ -305,6 +305,7 @@ public class HbaseIf {
 		return id;
 	}
 
+	
 	public Result searchByRowKey(HTable ht, String rk) throws Exception {
 		Get get = new Get(rk.getBytes());
 		Result rs = ht.get(get);
