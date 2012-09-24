@@ -1,3 +1,4 @@
+
 package org.robby;
 
 import java.io.IOException;
@@ -63,7 +64,7 @@ public class HbaseIf {
 		long id = 0;
 		put.add(Bytes.toBytes("param"), Bytes.toBytes("userid"),
 				Bytes.toBytes(id));
-		
+
 		put.add(Bytes.toBytes("param"), Bytes.toBytes("postid"),
 				Bytes.toBytes(id));
 		HTable ht = new HTable(conf, "tab_global");
@@ -74,50 +75,51 @@ public class HbaseIf {
 
 		// create tab_id2user
 		create_table("tab_id2user", "info", 1);
-		
+
 		/*
-		 * tab_follow
-		 * rowkey:userid
-		 * CF:name:userid => username
-		 * version => 1
-		 * */
+		 * tab_follow rowkey:userid CF:name:userid => username version => 1
+		 */
 		create_table("tab_follow", "name", 1);
-		
+
 		/*
-		 * tab_followed
-		 * rowkey:userid_{userid}
-		 * CF:userid => userid
-		 * */
+		 * tab_followed rowkey:userid_{userid} CF:userid => userid
+		 */
 		create_table("tab_followed", "userid", 1);
 	}
-	
-	public Set<String> getFollow(long id) throws Exception{
+
+	public Set<String> getAllUser() throws Exception {
 		Set<String> set = new HashSet<String>();
-		
-		HTable tab_users = new HTable(conf, "tab_users");
-		Get get = new Get(Bytes.toBytes(id));
-		get.setMaxVersions(500);
-		Result rs = tab_users.get(get);
-		
-		List<KeyValue> list = rs.getColumn(Bytes.toBytes("user"),
-				Bytes.toBytes("follow"));
-		
-		for(KeyValue kv:list){
-			long t = Bytes.toLong(kv.getValue());
-			String name = this.getNameById(t);
-			if(!name.equals(""))
-				set.add(name);
+		HTable tab_user2id = new HTable(conf, "tab_user2id");
+		Scan s = new Scan();
+
+		ResultScanner ss = tab_user2id.getScanner(s);
+		for (Result r : ss) {
+			String name = new String(r.getRow());
+			set.add(name);
+			System.out.print(name);
 		}
-		
-		tab_users.close();
 		return set;
 	}
-	
-	
-	
-	
-	
-	public boolean alreadyFollow(long oid, long did) throws Exception{
+
+	public Set<String> getFollow(String username) throws Exception {
+		long id = this.getIdByUsername(username);
+		Set<String> set = new HashSet<String>();
+
+		HTable tab_follow = new HTable(conf, "tab_follow");
+		Get get = new Get(Bytes.toBytes(id));
+		Result rs = tab_follow.get(get);
+
+		for (KeyValue kv : rs.raw()) {
+			String s = new String(kv.getValue());
+			set.add(s);
+			System.out.println(s);
+		}
+
+		tab_follow.close();
+		return set;
+	}
+
+	public boolean alreadyFollow(long oid, long did) throws Exception {
 		HTable tab_users = new HTable(conf, "tab_users");
 
 		Get get = new Get(Bytes.toBytes(oid));
@@ -126,97 +128,85 @@ public class HbaseIf {
 
 		List<KeyValue> list = rs.getColumn(Bytes.toBytes("user"),
 				Bytes.toBytes("follow"));
-		
+
 		tab_users.close();
-		for(KeyValue kv:list){
-			if(did == Bytes.toLong(kv.getValue()))
+		for (KeyValue kv : list) {
+			if (did == Bytes.toLong(kv.getValue()))
 				return true;
 		}
 		return false;
 	}
 
-	public boolean follow(String oname, String dname) throws Exception{
+	public boolean follow(String oname, String dname) throws Exception {
 		long oid = this.getIdByUsername(oname);
 		long did = this.getIdByUsername(dname);
-		
-		if(oid==0||did==0||oid==did)
+
+		if (oid == 0 || did == 0 || oid == did)
 			return false;
-		
+
 		/*
-		 * tab_follow
-		 * rowkey:userid
-		 * CF:name:userid => username
-		 * version => 1
-		 * */
+		 * tab_follow rowkey:userid CF:name:userid => username version => 1
+		 */
 		HTable tab_follow = new HTable(conf, "tab_follow");
-		
+
 		Put put = new Put(Bytes.toBytes(oid));
-		put.add(Bytes.toBytes("name"), Bytes.toBytes(did),
-				dname.getBytes());
+		put.add(Bytes.toBytes("name"), Bytes.toBytes(did), dname.getBytes());
 		tab_follow.put(put);
 		tab_follow.close();
-		
+
 		/*
-		 * tab_followed
-		 * rowkey:userid_{userid}
-		 * CF:userid => userid
-		 * */
+		 * tab_followed rowkey:userid_{userid} CF:userid => userid
+		 */
 		HTable tab_followed = new HTable(conf, "tab_followed");
-		put = new Put(Bytes.add(Bytes.toBytes(did),Bytes.toBytes(oid)));
-		put.add(Bytes.toBytes("userid"), null,
-				Bytes.toBytes(oid));
+		put = new Put(Bytes.add(Bytes.toBytes(did), Bytes.toBytes(oid)));
+		put.add(Bytes.toBytes("userid"), null, Bytes.toBytes(oid));
 		tab_followed.put(put);
 		tab_followed.close();
 		return true;
 	}
-	
-	public boolean unfollow(String oname, String dname) throws Exception{
+
+	public boolean unfollow(String oname, String dname) throws Exception {
 		long oid = this.getIdByUsername(oname);
 		long did = this.getIdByUsername(dname);
-		
-		if(oid==0||did==0||oid==did)
+
+		if (oid == 0 || did == 0 || oid == did)
 			return false;
-		
+
 		/*
-		 * tab_follow
-		 * rowkey:userid
-		 * CF:name:userid => username
-		 * version => 1
-		 * */
+		 * tab_follow rowkey:userid CF:name:userid => username version => 1
+		 */
 		HTable tab_follow = new HTable(conf, "tab_follow");
-		
+
 		Delete del = new Delete(Bytes.toBytes(oid));
 		del.deleteColumns(Bytes.toBytes("name"), Bytes.toBytes(did));
 		tab_follow.delete(del);
 		tab_follow.close();
-		
+
 		/*
-		 * tab_followed
-		 * rowkey:userid_{userid}
-		 * CF:userid => userid
-		 * */
+		 * tab_followed rowkey:userid_{userid} CF:userid => userid
+		 */
 		HTable tab_followed = new HTable(conf, "tab_followed");
-		
-		del = new Delete(Bytes.add(Bytes.toBytes(did),Bytes.toBytes(oid)));
+
+		del = new Delete(Bytes.add(Bytes.toBytes(did), Bytes.toBytes(oid)));
 		tab_followed.delete(del);
 		tab_followed.close();
 		return true;
 	}
 
-	public boolean deleteUser(long id) throws Exception{
+	public boolean deleteUser(long id) throws Exception {
 		String username = getNameById(id);
-		if(username.equals(""))
+		if (username.equals(""))
 			return false;
-		
+
 		HTable tab_user2id = new HTable(conf, "tab_user2id");
 		HTable tab_id2user = new HTable(conf, "tab_id2user");
-		
+
 		Delete del = new Delete(username.getBytes());
 		tab_user2id.delete(del);
-		
+
 		del = new Delete(Bytes.toBytes(id));
 		tab_id2user.delete(del);
-		
+
 		tab_user2id.close();
 		tab_id2user.close();
 		return true;
@@ -227,7 +217,7 @@ public class HbaseIf {
 		HTable tab_global = new HTable(conf, "tab_global");
 		HTable tab_user2id = new HTable(conf, "tab_user2id");
 		HTable tab_id2user = new HTable(conf, "tab_id2user");
-		
+
 		if (tab_user2id.exists(new Get(name.getBytes())))
 			return false;
 
@@ -305,7 +295,6 @@ public class HbaseIf {
 		return id;
 	}
 
-	
 	public Result searchByRowKey(HTable ht, String rk) throws Exception {
 		Get get = new Get(rk.getBytes());
 		Result rs = ht.get(get);
@@ -315,34 +304,31 @@ public class HbaseIf {
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
 		HbaseIf hbase = new HbaseIf();
-		//hbase.createTables();
+		// hbase.createTables();
 		/*
 		 * h.createTables(); if(h.createNewUser("robby1", "robby"))
 		 * System.out.println("add user success"); else
 		 * System.out.println("add user failed");
 		 */
-		
+
 		/*
-		hbase.createTables();
-		hbase.createNewUser("user1", "pwd1");
-		hbase.createNewUser("user2", "pwd1");
-		hbase.createNewUser("user3", "pwd1");
-		hbase.createNewUser("user4", "pwd1");
-		hbase.createNewUser("user5", "pwd1");
-		
-		
-		
-		
+		 * hbase.createTables(); hbase.createNewUser("user1", "pwd1");
+		 * hbase.createNewUser("user2", "pwd1"); hbase.createNewUser("user3",
+		 * "pwd1"); hbase.createNewUser("user4", "pwd1");
+		 * hbase.createNewUser("user5", "pwd1");
+		 * 
+		 * 
+		 * 
+		 * 
+		 * hbase.follow("user1", "user2"); hbase.follow("user1", "user2");
+		 * hbase.follow("user1", "user2"); hbase.follow("user3", "user2");
+		 * hbase.follow("user4", "user2");
+		 */
+		// hbase.unfollow("user1", "user2");
 		hbase.follow("user1", "user2");
-		hbase.follow("user1", "user2");
-		hbase.follow("user1", "user2");
-		hbase.follow("user3", "user2");
-		hbase.follow("user4", "user2");
-		*/
-		hbase.unfollow("user1", "user2");
-		//hbase.follow("user1", "user3");
-		
+		hbase.follow("user1", "user3");
+		hbase.getFollow("user1");
+		hbase.getAllUser();
 	}
-	
 
 }
