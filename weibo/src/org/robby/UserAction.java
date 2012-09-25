@@ -10,7 +10,7 @@ public class UserAction extends BaseAction{
 	String username;
 	String password;
 	String password2;
-	String post;
+	String content;
 
 	HbaseIf hbase;
 	public UserAction(){
@@ -18,6 +18,15 @@ public class UserAction extends BaseAction{
 		username = new String();
 		password = new String();
 
+	}
+	
+	public String Post() throws Exception{
+		if(hbase.post(login_user, content))
+			errmsg = "post success";
+		else
+			errmsg = "post error";
+		
+		return SUCCESS;
 	}
 	
 	public String Unfollow() throws Exception {
@@ -127,13 +136,14 @@ public class UserAction extends BaseAction{
 		this.password2 = password2;
 	}
 
-	public String getPost() {
-		return post;
+	public String getContent() {
+		return content;
 	}
 
-	public void setPost(String post) {
-		this.post = post;
-	}	
+	public void setContent(String content) {
+		this.content = content;
+	}
+
 	
 	
 }

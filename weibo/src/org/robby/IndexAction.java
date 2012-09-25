@@ -33,12 +33,7 @@ public class IndexAction extends BaseAction{
 				unfollow.add(s);
 		}
 		
-	
-		posts.add(new Post("robby", "this is a test", "2012"));
-		posts.add(new Post("robby", "this is a test", "2012"));
-		posts.add(new Post("robby", "this is a test", "2012"));
-		posts.add(new Post("robby", "this is a test", "2012"));
-		posts.add(new Post("robby", "this is a test", "2012"));
+		posts = hbase.getPost(login_user);
 		
 		System.out.println(follow.size());
 		return SUCCESS;

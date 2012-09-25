@@ -1,7 +1,10 @@
 package org.robby;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.NavigableMap;
@@ -62,19 +65,115 @@ public class HbaseIf {
 		admin.createTable(tableDesc);
 		admin.close();
 	}
+	
+	
+	public List<Post> getPost(String username) throws Exception{
+		List<Post> list = new ArrayList<Post>();
+		long id = this.getIdByUsername(username);
+		
+		byte[] begin = Bytes.add(Bytes.toBytes(id), Bytes.toBytes(Long.MAX_VALUE-Long.MAX_VALUE));
+		byte[] end = Bytes.add(Bytes.toBytes(id), Bytes.toBytes(Long.MAX_VALUE));
+		
+		Scan s = new Scan();
+		s.setStartRow(begin);
+		s.setStopRow(end);
+		
+		HTable tab_post = new HTable(conf, "tab_post");
+		HTable tab_inbox = new HTable(conf, "tab_inbox");
+		ResultScanner ss = tab_inbox.getScanner(s);
+		Get get = null;
+		Post p = null;
+		
+		for (Result r : ss) {
+			byte[] postid = r.getValue(Bytes.toBytes("postid"), null);
+			
+			get = new Get(postid);
+			Result rs = tab_post.get(get);
+			String post_username = Bytes.toString(rs.getValue(Bytes.toBytes("post"), Bytes.toBytes("username")));
+			String post_content =  Bytes.toString(rs.getValue(Bytes.toBytes("post"), Bytes.toBytes("content")));
+			String post_ts =       Bytes.toString(rs.getValue(Bytes.toBytes("post"), Bytes.toBytes("ts")));
+			p = new Post(post_username, post_content, post_ts);
+			list.add(0,p);
+		}
+		
+		return list;
+	}
+	
+	public boolean post(String username, String content)
+			throws Exception {
+		HTable tab_global = new HTable(conf, "tab_global");
+		HTable tab_post = new HTable(conf, "tab_post");
+		
+
+		long id = tab_global.incrementColumnValue(Bytes.toBytes("row_postid"),
+				Bytes.toBytes("param"), Bytes.toBytes("postid"), 1);
+
+		byte[] postid = Bytes.toBytes(id);
+		
+		// insert record in tab_post
+		Put put = new Put(postid);
+		
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String ts = dateFormat.format(new Date());
+		
+		put.add(Bytes.toBytes("post"), Bytes.toBytes("username"), username.getBytes());
+		put.add(Bytes.toBytes("post"), Bytes.toBytes("content"), content.getBytes());
+		put.add(Bytes.toBytes("post"), Bytes.toBytes("ts"), ts.getBytes());
+		tab_post.put(put);
+
+		tab_global.close();
+		tab_post.close();
+		
+		// send the post
+		long senderid = this.getIdByUsername(username);
+		System.out.println("sender id:" + senderid);
+		
+		
+		byte[] begin = Bytes.add(Bytes.toBytes(senderid), Bytes.toBytes(Long.MAX_VALUE-Long.MAX_VALUE));
+		byte[] end = Bytes.add(Bytes.toBytes(senderid), Bytes.toBytes(Long.MAX_VALUE));
+		
+		
+		Scan s = new Scan();
+		s.setStartRow(begin);
+		s.setStopRow(end);
+		
+		
+		HTable tab_followed = new HTable(conf, "tab_followed");
+		HTable tab_inbox = new HTable(conf, "tab_inbox");
+		ResultScanner ss = tab_followed.getScanner(s);
+		
+		put = new Put(Bytes.add(Bytes.toBytes(senderid), postid));
+		put.add(Bytes.toBytes("postid"), null, postid);
+		tab_inbox.put(put);
+		
+		for (Result r : ss) {
+			byte[] did = r.getValue(Bytes.toBytes("userid"), null);
+			
+			put = new Put(Bytes.add(did, postid));
+			put.add(Bytes.toBytes("postid"), null, postid);
+			tab_inbox.put(put);
+		}
+		
+		tab_followed.close();
+		tab_inbox.close();
+		
+		return true;
+	}
 
 	public void createTables() throws Exception {
 		// create tag_global and initialization
 		create_table("tab_global", "param", 1);
 
+		HTable ht = new HTable(conf, "tab_global");
 		Put put = new Put(Bytes.toBytes("row_userid"));
 		long id = 0;
 		put.add(Bytes.toBytes("param"), Bytes.toBytes("userid"),
 				Bytes.toBytes(id));
+		ht.put(put);
 
+		put = new Put(Bytes.toBytes("row_postid"));
 		put.add(Bytes.toBytes("param"), Bytes.toBytes("postid"),
 				Bytes.toBytes(id));
-		HTable ht = new HTable(conf, "tab_global");
 		ht.put(put);
 
 		// create tab_user2id
@@ -92,6 +191,20 @@ public class HbaseIf {
 		 * tab_followed rowkey:userid_{userid} CF:userid => userid
 		 */
 		create_table("tab_followed", "userid", 1);
+		
+		/*
+		 * tab_post
+		 * rowkey:postid
+		 * CF:content
+		 * */
+		create_table("tab_post", "post", 1);
+		
+		/*
+		 * tab_inbox
+		 * rowkey:userid+postid
+		 * CF:postid
+		 */
+		create_table("tab_inbox", "postid", 1);
 	}
 
 	public Set<String> getAllUser() throws Exception {
@@ -318,6 +431,7 @@ public class HbaseIf {
 		 * System.out.println("add user failed");
 		 */
 
+		
 		hbase.createTables();
 		hbase.createNewUser("user1", "pwd1");
 		hbase.createNewUser("user2", "pwd1");
@@ -325,17 +439,16 @@ public class HbaseIf {
 		hbase.createNewUser("user4", "pwd1");
 		hbase.createNewUser("user5", "pwd1");
 
-		hbase.follow("user1", "user2");
-		hbase.follow("user1", "user2");
+		
+		
 		hbase.follow("user1", "user2");
 		hbase.follow("user3", "user2");
 		hbase.follow("user4", "user2");
 
-		// hbase.unfollow("user1", "user2");
-		hbase.follow("user1", "user2");
-		hbase.follow("user1", "user3");
-		hbase.getFollow("user1");
-		hbase.getAllUser();
+
+		
+		
+		
 	}
 
 }

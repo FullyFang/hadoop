@@ -46,8 +46,8 @@
 			<div class="row-fluid">
 				<div class="span4">
 					<div class="well wbwell">
-						<form action="submitpost.do" style="margin:0px">
-							<textarea rows="4" style="width:95%; overflow: hidden"></textarea>
+						<form action="post.do" style="margin:0px">
+							<textarea name="content" rows="4" style="width:95%; overflow: hidden"></textarea>
 							<button type="submit" class="btn">Submit</button>
 						</form>
 					</div>
@@ -82,11 +82,19 @@
 				<div class="span8">
 					<div class="well">
 						<table class="table">
+							<thead>
+								<tr>
+									<th>1</th>
+									<th>2</th>
+									<th>3</th>
+								</tr>
+							</thead>
 							<tbody>
-								<s:iterator value="follow" id="name">
+								<s:iterator value="posts" id="Post">
 									<tr>
-										<td><s:property value="name" /></td>
-										<td><a>取消关注</a></td>
+										<td><s:property value="username" /></td>
+										<td><s:property value="content" /></td>
+										<td><s:property value="ts" /></td>
 									</tr>
 								</s:iterator>
 							</tbody>

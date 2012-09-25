@@ -24,6 +24,10 @@
 			<result>/error.jsp</result>
 		</action>
 		
+		<action name="post" class="org.robby.UserAction" method="Post">
+			<result>/error.jsp</result>
+		</action>
+		
 		<action name="login" class="org.robby.UserAction" method="Login">
 			<result type="redirect">index.do</result>
 			<result name="error">/error.jsp</result>
