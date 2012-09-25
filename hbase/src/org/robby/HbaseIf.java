@@ -1,4 +1,3 @@
-
 package org.robby;
 
 import java.io.IOException;
@@ -34,8 +33,16 @@ import org.apache.hadoop.hbase.util.Bytes;
 
 public class HbaseIf {
 	Configuration conf;
+	public static HbaseIf ghbase = null;
+	
+	public static HbaseIf getInstance(){
+		if(ghbase == null)
+			ghbase = new HbaseIf();
+		return ghbase;
+	}
 
 	HbaseIf() {
+		
 		conf = HBaseConfiguration.create();
 	}
 
@@ -311,19 +318,19 @@ public class HbaseIf {
 		 * System.out.println("add user failed");
 		 */
 
-		/*
-		 * hbase.createTables(); hbase.createNewUser("user1", "pwd1");
-		 * hbase.createNewUser("user2", "pwd1"); hbase.createNewUser("user3",
-		 * "pwd1"); hbase.createNewUser("user4", "pwd1");
-		 * hbase.createNewUser("user5", "pwd1");
-		 * 
-		 * 
-		 * 
-		 * 
-		 * hbase.follow("user1", "user2"); hbase.follow("user1", "user2");
-		 * hbase.follow("user1", "user2"); hbase.follow("user3", "user2");
-		 * hbase.follow("user4", "user2");
-		 */
+		hbase.createTables();
+		hbase.createNewUser("user1", "pwd1");
+		hbase.createNewUser("user2", "pwd1");
+		hbase.createNewUser("user3", "pwd1");
+		hbase.createNewUser("user4", "pwd1");
+		hbase.createNewUser("user5", "pwd1");
+
+		hbase.follow("user1", "user2");
+		hbase.follow("user1", "user2");
+		hbase.follow("user1", "user2");
+		hbase.follow("user3", "user2");
+		hbase.follow("user4", "user2");
+
 		// hbase.unfollow("user1", "user2");
 		hbase.follow("user1", "user2");
 		hbase.follow("user1", "user3");

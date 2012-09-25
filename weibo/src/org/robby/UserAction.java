@@ -20,6 +20,24 @@ public class UserAction extends BaseAction{
 
 	}
 	
+	public String Unfollow() throws Exception {
+		if(hbase.unfollow(login_user, username))
+			errmsg = "success";
+		else
+			errmsg = "error";
+
+		return SUCCESS;
+	}
+	
+	public String Follow() throws Exception {
+		if(hbase.follow(login_user, username))
+			errmsg = "success";
+		else
+			errmsg = "error";
+
+		return SUCCESS;
+	}
+	
 	public String Logout() throws Exception {
 		login_user = "";
 		login_id = 0;

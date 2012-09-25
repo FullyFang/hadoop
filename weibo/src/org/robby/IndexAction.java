@@ -1,24 +1,38 @@
 package org.robby;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 
 import com.opensymphony.xwork2.ActionSupport;
 
 public class IndexAction extends BaseAction{
 	private static final long serialVersionUID = 1L;
-	List<String> follow;
+	Set<String> follow;
+	Set<String> unfollow;
 	List<Post> posts;
 	
 	public IndexAction(){
-		follow = new ArrayList<String>();
+		follow = new HashSet<String>();
+		unfollow = new HashSet<String>();
 		posts = new ArrayList<Post>();
 	}
 	
 	public String execute() throws Exception{
 		if(login_user.equals(""))
 			return SUCCESS;
+		
+		HbaseIf hbase = HbaseIf.getInstance();
+		follow = hbase.getFollow(login_user);
+		Set<String> all = hbase.getAllUser();
+		
+		for(String s:all){
+			if(!follow.contains(s))
+				unfollow.add(s);
+		}
+		
 	
 		posts.add(new Post("robby", "this is a test", "2012"));
 		posts.add(new Post("robby", "this is a test", "2012"));
@@ -26,20 +40,8 @@ public class IndexAction extends BaseAction{
 		posts.add(new Post("robby", "this is a test", "2012"));
 		posts.add(new Post("robby", "this is a test", "2012"));
 		
-		follow.add("test1");
-		follow.add("test2");
-		follow.add("test3");
-		follow.add("test4");
 		System.out.println(follow.size());
 		return SUCCESS;
-	}
-
-	public List<String> getFollow() {
-		return follow;
-	}
-
-	public void setFollow(List<String> follow) {
-		this.follow = follow;
 	}
 
 	public List<Post> getPosts() {
@@ -48,6 +50,22 @@ public class IndexAction extends BaseAction{
 
 	public void setPosts(List<Post> posts) {
 		this.posts = posts;
+	}
+
+	public Set<String> getFollow() {
+		return follow;
+	}
+
+	public void setFollow(Set<String> follow) {
+		this.follow = follow;
+	}
+
+	public Set<String> getUnfollow() {
+		return unfollow;
+	}
+
+	public void setUnfollow(Set<String> unfollow) {
+		this.unfollow = unfollow;
 	}
 
 	
