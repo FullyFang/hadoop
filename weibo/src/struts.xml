@@ -41,5 +41,15 @@
 			<result>/register.jsp</result>
 			<result name="error">/error.jsp</result>
 		</action>
+		
+		
+		<action name="cdrindex" class="org.robby.cdr.CdrIndexAction">
+			<result>/cdr/cdrindex.jsp</result>
+		</action>
+		
+		<action name="search" class="org.robby.cdr.SearchAction">
+			<result>/cdr/search.jsp</result>
+		</action>
+		
 	</package>
 </struts>

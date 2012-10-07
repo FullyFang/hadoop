@@ -52,7 +52,7 @@
 						</form>
 					</div>
 					<div class="well wbwell">
-						<p>followed user</p>
+						<p>已关注用户</p>
 						<table class="table">
 							<tbody>
 								<s:iterator value="follow" id="name">
@@ -66,7 +66,7 @@
 					</div>
 					
 					<div class="well wbwell">
-						<p>unfollowed user</p>
+						<p>未关注用户</p>
 						<table class="table">
 							<tbody>
 								<s:iterator value="unfollow" id="name">
@@ -83,10 +83,10 @@
 					<div class="well">
 						<table class="table">
 							<thead>
-								<tr>
-									<th>1</th>
-									<th>2</th>
-									<th>3</th>
+								<tr>	
+									<th>发布人</th>
+									<th>内容</th>
+									<th>时间</th>
 								</tr>
 							</thead>
 							<tbody>

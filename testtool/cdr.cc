@@ -26,10 +26,16 @@ string getrandStr(int len, int mod, bool plus=false)
 	return s;
 }
 
+string getType()
+{
+	return getrandStr(1, 2);
+}
+
+
 void getMsisdn(string &msisdn, string &areacode)
 {
 	string t = getrandStr(4, 10000);
-	msisdn = "139000" + t;
+	msisdn = "1390000" + t;
 
 	areacode = "010";
 
@@ -54,12 +60,13 @@ string getTime()
 
 string getOneCdr()
 {
-	string oaddr, ocode, daddr, dcode, time;
+	string type, oaddr, ocode, daddr, dcode, time;
 	getMsisdn(oaddr, ocode);
 	getMsisdn(daddr, dcode);
 	time = getTime();
+	type = getType();
 	
-	string s = oaddr + "," + ocode + "," + daddr + "," + dcode + "," + time + "\n";
+	string s = oaddr + "," + ocode + "," + daddr + "," + dcode + "," + time + "," + type + "\n";
 	return s;
 }
 
@@ -79,7 +86,7 @@ void test()
 int main()
 {	
 	//test();
-	for(int i=0; i<100; i++){
+	for(int i=0; i<10; i++){
 		char filename[30];
 		memset(filename, 0, sizeof(filename));
 		sprintf(filename, "./output/cdr%02d.txt", i);

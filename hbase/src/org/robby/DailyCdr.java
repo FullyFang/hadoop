@@ -28,10 +28,14 @@ public class DailyCdr {
         @Override
         public void map(ImmutableBytesWritable row, Result values, Context context) throws IOException {
             // extract userKey from the compositeKey (userId + counter)
-        	KeyValue kv = values.getColumnLatest(Bytes.toBytes("field"), Bytes.toBytes("time"));
+        	//KeyValue kv = values.getColumnLatest(Bytes.toBytes("field"), Bytes.toBytes("time"));
+        	KeyValue kv = values.getColumnLatest(Bytes.toBytes("data"), null);
         	
+        	CdrPro.SmCdr cdr = CdrPro.SmCdr.parseFrom(kv.getValue());
+        	String ts = cdr.getTimestamp();
+        	//System.out.println(ts);
             //ImmutableBytesWritable userKey = new ImmutableBytesWritable(row.get(), 0, Bytes.SIZEOF_INT);
-        	ImmutableBytesWritable userKey = new ImmutableBytesWritable(kv.getValue(), 0, 8);
+        	ImmutableBytesWritable userKey = new ImmutableBytesWritable(ts.getBytes(), 0, 8);
             try {
                 context.write(userKey, one);
             } catch (InterruptedException e) {
@@ -53,9 +57,9 @@ public class DailyCdr {
                 sum += val.get();
             }
 
-            Put put = new Put(key.get());
-            put.add(Bytes.toBytes("field"), Bytes.toBytes("total"), Bytes.toBytes(sum));
-            System.out.println(String.format("stats :   key : %d,  count : %d", Bytes.toInt(key.get()), sum));
+            Put put = new Put(key.get()); 
+            put.add(Bytes.toBytes("data"), Bytes.toBytes("total"), Bytes.toBytes(sum));
+            System.out.println("stats :   key : " +  Bytes.toString(key.get()) + ",  count : "+ sum);
             context.write(key, put);
         }
     }
@@ -66,7 +70,7 @@ public class DailyCdr {
         job.setJarByClass(DailyCdr.class);
         Scan scan = new Scan();
         
-        scan.addColumn(Bytes.toBytes("field"), Bytes.toBytes("time"));
+        //scan.addColumn(Bytes.toBytes("data"), null);
         
         //scan.setFilter(new FirstKeyOnlyFilter());
         TableMapReduceUtil.initTableMapperJob("tab_cdr", scan, Mapper1.class, ImmutableBytesWritable.class,
@@ -74,5 +78,4 @@ public class DailyCdr {
         TableMapReduceUtil.initTableReducerJob("tab_cdr_daily", Reducer1.class, job);
         System.exit(job.waitForCompletion(true) ? 0 : 1);
     }
-
 }

@@ -71,8 +71,11 @@ public class HbaseIf {
 		List<Post> list = new ArrayList<Post>();
 		long id = this.getIdByUsername(username);
 		
-		byte[] begin = Bytes.add(Bytes.toBytes(id), Bytes.toBytes(Long.MAX_VALUE-Long.MAX_VALUE));
-		byte[] end = Bytes.add(Bytes.toBytes(id), Bytes.toBytes(Long.MAX_VALUE));
+		//byte[] begin = Bytes.add(Bytes.toBytes(id), Bytes.toBytes(Long.MAX_VALUE-Long.MAX_VALUE));
+		byte[] begin = Bytes.toBytes(id);
+		//byte[] end = Bytes.add(Bytes.toBytes(id), Bytes.toBytes(Long.MAX_VALUE));
+		byte[] end = Bytes.toBytes(id+1);
+		
 		
 		Scan s = new Scan();
 		s.setStartRow(begin);

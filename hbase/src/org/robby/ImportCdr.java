@@ -13,8 +13,9 @@ import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.HTablePool;
 import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.util.Bytes;
 
-import com.google.common.primitives.Bytes;
+
 
 public class ImportCdr {
 
@@ -38,20 +39,6 @@ public class ImportCdr {
 
 		public void run() {
 			try {
-				String cf = "field";
-				String f0 = "oaddr";
-				String f1 = "ocode";
-				String f2 = "daddr";
-				String f3 = "dcode";
-				String f4 = "time";
-
-				byte[] bcf = cf.getBytes();
-				byte[] bf0 = f0.getBytes();
-				byte[] bf1 = f1.getBytes();
-				byte[] bf2 = f2.getBytes();
-				byte[] bf3 = f3.getBytes();
-				byte[] bf4 = f4.getBytes();
-
 				HTable tab = (HTable) pool.getTable("tab_cdr");
 				tab.setAutoFlush(false);
 				//tab.setWriteBufferSize(10*1024*1024);
@@ -66,12 +53,18 @@ public class ImportCdr {
 						String[] arr = s.split(",");
 						String row = arr[0] + "_" + arr[2] + "_" + arr[4];
 						Put p = new Put(row.getBytes());
-						p.add(bcf, bf0, arr[0].getBytes());
-						p.add(bcf, bf1, arr[1].getBytes());
-						p.add(bcf, bf2, arr[2].getBytes());
-						p.add(bcf, bf3, arr[3].getBytes());
-						p.add(bcf, bf4, arr[4].getBytes());
-
+						CdrPro.SmCdr cdr = CdrPro.SmCdr.newBuilder()
+								.setOaddr(arr[0])
+								.setOareacode(arr[1])
+								.setDaddr(arr[2])
+								.setDareacode(arr[3])
+								.setTimestamp(arr[4])
+								.setType(arr[5])
+								.build();
+						
+						
+						p.add(Bytes.toBytes("data"), null, cdr.toByteArray());
+						
 						
 						l.add(p);
 						if (i % 1000 == 0) {
@@ -102,7 +95,19 @@ public class ImportCdr {
 		}
 
 		HTableDescriptor tableDesc = new HTableDescriptor(name);
-		HColumnDescriptor hd = new HColumnDescriptor("field");
+		HColumnDescriptor hd = new HColumnDescriptor("data");
+		hd.setMaxVersions(1);
+		tableDesc.addFamily(hd);
+		admin.createTable(tableDesc);
+		
+		name = "tab_cdr_daily";
+		if (admin.tableExists(name)) {
+			admin.disableTable(name);
+			admin.deleteTable(name);
+		}
+
+		tableDesc = new HTableDescriptor(name);
+		hd = new HColumnDescriptor("data");
 		hd.setMaxVersions(1);
 		tableDesc.addFamily(hd);
 		admin.createTable(tableDesc);
@@ -141,7 +146,7 @@ public class ImportCdr {
 
 	public void multi() throws Exception {
 		// TODO Auto-generated method stub
-		String p = "/home/robby/project/hadoop/testtool/output/";
+		String p = "/var/www/hadoop/testtool/output/";
 		File path = new File(p);
 		String[] list = path.list();
 		int i = 0;
