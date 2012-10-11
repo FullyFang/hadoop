@@ -17,11 +17,14 @@ import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
 import org.apache.hadoop.hbase.mapreduce.TableMapper;
 import org.apache.hadoop.hbase.mapreduce.TableReducer;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Job;
 
 
-public class DailyCdr {
+
+
+public class DailyCdrByAC {
 
     static class Mapper extends TableMapper<ImmutableBytesWritable, IntWritable> {
 
@@ -36,9 +39,12 @@ public class DailyCdr {
         	
         	CdrPro.SmCdr cdr = CdrPro.SmCdr.parseFrom(kv.getValue());
         	String ts = cdr.getTimestamp();
+        	String ac = cdr.getOareacode();
         	//System.out.println(ts);
             //ImmutableBytesWritable userKey = new ImmutableBytesWritable(row.get(), 0, Bytes.SIZEOF_INT);
-        	ImmutableBytesWritable userKey = new ImmutableBytesWritable(ts.getBytes(), 0, 8);
+        	byte[] k = Bytes.add(ts.substring(0, 8).getBytes(), ac.getBytes());
+        	ImmutableBytesWritable userKey = new ImmutableBytesWritable(k);
+
             try {
                 context.write(userKey, one);
             } catch (InterruptedException e) {
@@ -71,7 +77,7 @@ public class DailyCdr {
 		Configuration conf = HBaseConfiguration.create();
 		HBaseAdmin admin = new HBaseAdmin(conf);
 
-		String name = "tab_cdr_daily";
+		String name = "tab_cdr_daily_byac";
 		if (admin.tableExists(name)) {
 			admin.disableTable(name);
 			admin.deleteTable(name);
@@ -88,8 +94,8 @@ public class DailyCdr {
     public static void main(String[] args) throws Exception {
     	createTable();
         Configuration conf = HBaseConfiguration.create();
-        Job job = new Job(conf, "daily report");
-        job.setJarByClass(DailyCdr.class);
+        Job job = new Job(conf, "daily report by areacode");
+        job.setJarByClass(DailyCdrByAC.class);
         Scan scan = new Scan();
         
         //scan.addColumn(Bytes.toBytes("data"), null);
@@ -97,7 +103,7 @@ public class DailyCdr {
         //scan.setFilter(new FirstKeyOnlyFilter());
         TableMapReduceUtil.initTableMapperJob("tab_cdr", scan, Mapper.class, ImmutableBytesWritable.class,
                 IntWritable.class, job);
-        TableMapReduceUtil.initTableReducerJob("tab_cdr_daily", Reducer.class, job);
+        TableMapReduceUtil.initTableReducerJob("tab_cdr_daily_byac", Reducer.class, job);
         System.exit(job.waitForCompletion(true) ? 0 : 1);
     }
 }

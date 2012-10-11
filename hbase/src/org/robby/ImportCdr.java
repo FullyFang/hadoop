@@ -99,18 +99,7 @@ public class ImportCdr {
 		hd.setMaxVersions(1);
 		tableDesc.addFamily(hd);
 		admin.createTable(tableDesc);
-		
-		name = "tab_cdr_daily";
-		if (admin.tableExists(name)) {
-			admin.disableTable(name);
-			admin.deleteTable(name);
-		}
-
-		tableDesc = new HTableDescriptor(name);
-		hd = new HColumnDescriptor("data");
-		hd.setMaxVersions(1);
-		tableDesc.addFamily(hd);
-		admin.createTable(tableDesc);
+		admin.close();
 	}
 
 	public void startThread(Vector<String> vec) {

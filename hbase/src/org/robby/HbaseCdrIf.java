@@ -6,7 +6,10 @@ import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 
 
@@ -51,13 +54,55 @@ public class HbaseCdrIf {
 		return l;
 	}
 	
+	public Map<String, Integer>  getDailyReport() throws Exception{
+		Map<String, Integer>  m = new LinkedHashMap<String, Integer>();
+		HTable tab = (HTable) tablePool.getTable("tab_cdr_daily");
+		
+		Scan s = new Scan();
+		ResultScanner rs = tab.getScanner(s);
+		Get get = null;
+		Post p = null;
+		
+		for (Result r : rs) {
+			String t = Bytes.toString(r.getRow());
+			int n = Bytes.toInt(r.getValue(Bytes.toBytes("data"), Bytes.toBytes("total")));
+
+			m.put(t, n);
+		}
+		
+		return m;
+	}
+	
+	public Map<String, Integer>  getDailyReportAC() throws Exception{
+		Map<String, Integer>  m = new LinkedHashMap<String, Integer>();
+		HTable tab = (HTable) tablePool.getTable("tab_cdr_daily_byac");
+		
+		Scan s = new Scan();
+		ResultScanner rs = tab.getScanner(s);
+		Get get = null;
+		Post p = null;
+		
+		for (Result r : rs) {
+			String t = Bytes.toString(r.getRow());
+			int n = Bytes.toInt(r.getValue(Bytes.toBytes("data"), Bytes.toBytes("total")));
+
+			m.put(t, n);
+		}
+		
+		return m;
+	}
+	
+	
+	
 	public static void main(String[] args) throws Exception{
 		// TODO Auto-generated method stub
 		HbaseCdrIf hif = HbaseCdrIf.getInstance();
+		/*
 		List<CdrPro.SmCdr> l = hif.getSmCdr("1390000068");
 		for(CdrPro.SmCdr sm:l){
 			System.out.println(sm.getOaddr() + ":" + sm.getOareacode() + ":" + sm.getDaddr() + ":" + sm.getDareacode() + ":" + sm.getTimestamp() + ":" + sm.getType());
-		}
+		}*/
+		
 	}
 
 }
