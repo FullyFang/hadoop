@@ -1,7 +1,22 @@
-create table tab_cdr(oaddr string, oareacode string, daddr string, dareacode string, ts string, type string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' STORED AS TEXTFILE LOCATION '/cdr00.txt';
+//基本使用
+create database test;
+use test;
+drop database test;
 
-create table tab_res(name string, num int);
+dfs -ls;
 
-insert overwrite table tab_res select 'tab_cdr', count(*) from tab_cdr;
+create table tab_name(id int, name string);
+show tables;
+DROP TABLE [IF EXISTS] table_name
+//clolume type
+load data local inpath '/home/robby/a.txt' into table tab_name;
 
-insert into table tab_res select 'tab_cdr', count(*) from tab_cdr where type='0';
+//
+drop table tab_name;
+create table tab_name(id int, name string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+load data local inpath '/home/robby/a.txt' into table tab_name;
+
+
+describe tab_name;
+
+
