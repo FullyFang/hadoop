@@ -1,0 +1,6 @@
+CREATE USER 'hive'@'hive-mysql' IDENTIFIED BY 'hive';
+GRANT ALL PRIVILEGES ON *.* TO 'hive'@'hive-mysql' WITH GRANT OPTION;
+
+
+http://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.22.tar.gz/from/http://cdn.mysql.com/
+
