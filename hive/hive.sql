@@ -5,3 +5,4 @@ create table tab_res(name string, num int);
 insert overwrite table tab_res select 'tab_cdr', count(*) from tab_cdr;
 
 insert into table tab_res select 'tab_cdr', count(*) from tab_cdr where type='0';
+
