@@ -1,0 +1,36 @@
+1, sudo apt-get install liblzo2-dev  
+
+2, sudo apt-get install lzop  
+
+3, https://github.com/kevinweil/hadoop-lzo
+	 a, git clone https://github.com/kevinweil/hadoop-lzo  
+	 b, download *.tar.gz
+
+4, 修改 build.xml
+    搜索javah
+    加上<classpath refid="classpath"/>
+		<javah classpath="${build.classes}"
+           destdir="${build.native}/src/com/hadoop/compression/lzo"
+           force="yes"
+           verbose="yes">
+      <class name="com.hadoop.compression.lzo.LzoCompressor" />
+      <class name="com.hadoop.compression.lzo.LzoDecompressor" />
+      <classpath refid="classpath"/>
+    </javah>
+
+5, export CFLAGS=-m32   
+   export CXXFLAGS=-m32   
+   ant compile-native tar
+  
+6, 拷贝 builid/hadoop-lzo-0.4.15.jar 到 $HADOOP_HOME/lib
+
+7, 修改core-site.xm
+    <property>  
+    	<name>io.compression.codecs</name>  
+    	<value>org.apache.hadoop.io.compress.DefaultCodec,org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.BZip2Codec,com.hadoop.compression.lzo.LzopCodec</value> 
+    </property> 
+     
+    <property>  
+    	<name>io.compression.codec.lzo.class</name>  
+    	<value>com.hadoop.compression.lzo.LzoCodec</value>  
+    </property>

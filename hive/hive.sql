@@ -57,6 +57,7 @@ create table tab_name(id int, name string) ROW FORMAT DELIMITED FIELDS TERMINATE
 load data local inpath '/home/robby/a.txt' into table tab_name;
 
 
+
 //
 set mapred.reduce.tasks=2;
 
@@ -72,3 +73,27 @@ set hive.enforce.bucketing = true;
 INSERT OVERWRITE TABLE tab_cdr_buc
 SELECT * from tab_cdr;
 
+//sequence file
+drop table tab_cdr_seq; 
+CREATE TABLE tab_cdr_seq(oaddr string, oareacode string, daddr string, dareacode string, ts string, type string) STORED AS SEQUENCEFILE;
+set hive.exec.compress.output=true;
+set mapred.output.compress=true;
+set mapred.output.compression.type=BLOCK;
+set mapred.output.compression.codec=org.apache.hadoop.io.compress.LzoCodec;
+insert overwrite table tab_cdr_seq select * from tab_cdr;
+
+
+
+//rcfile
+drop table tab_cdr_rc; 
+CREATE TABLE tab_cdr_rc(oaddr string, oareacode string, daddr string, dareacode string, ts string, type string) STORED AS rcfile;
+set hive.exec.compress.output=true;
+set mapred.output.compress=true;
+set mapred.output.compression.codec=org.apache.hadoop.io.compress.LzoCodec;
+insert overwrite table tab_cdr_rc select * from tab_cdr;
+
+
+//
+select count(*) from tab_cdr;
+select count(*) from tab_cdr_seq;
+select count(*) from tab_cdr_rc;
