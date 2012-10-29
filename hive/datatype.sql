@@ -35,3 +35,10 @@ select info.tel from tab_st;
 
 insert into table tab_st select oaddr, named_struct('age',0, 'tel', daddr, 'addr', dareacode) from tab_cdr;
 
+//if
+select oaddr, if(oareacode='010', 'beijin', 'non-beijing') from tab_cdr limit 10;
+
+//case
+select oaddr, case oareacode when '010' then 'beijing' when '021' then 'shanghai' when '020' then 'guangzou' end from tab_cdr limit 50;
+select oaddr, case when oareacode='010' then 'beijing' when oareacode='021' then 'shanghai' when oareacode='020' then 'guangzou' end from tab_cdr limit 50;
+
