@@ -18,11 +18,11 @@
       <classpath refid="classpath"/>
     </javah>
 
-5, export CFLAGS=-m32   
+5, export CFLAGS=-m32
    export CXXFLAGS=-m32   
    ant compile-native tar
   
-6, ¿½±´ builid/hadoop-lzo-0.4.15.jar µ½ $HADOOP_HOME/lib
+6, ¿½±´ build/hadoop-lzo-0.4.15.jar µ½ $HADOOP_HOME/lib
 
 7, ÐÞ¸Äcore-site.xm
     <property>  
@@ -34,3 +34,5 @@
     	<name>io.compression.codec.lzo.class</name>  
     	<value>com.hadoop.compression.lzo.LzoCodec</value>  
     </property>
+
+8, cp build/native/Linux-i386-32/lib/libgplcompression.so $HADOOP_HOME/lib/native/Linux-i386-32/
