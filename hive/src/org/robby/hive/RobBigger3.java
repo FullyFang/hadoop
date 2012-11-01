@@ -16,4 +16,5 @@ public final class RobBigger3 extends UDF {
   }
 }
 
-//create temporary function my_sum as 'org.robby.hive.RobSum';
+//add jar hiverob.jar
+//create temporary function my_bigger3 as 'org.robby.hive.RobBigger3';
