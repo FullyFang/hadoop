@@ -7,6 +7,8 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 
 /*/
+ * hive --service hiveserver
+ * 
  * drop table tab_indb_tmp;
  * create table tab_indb_tmp(oaddr string, oareacode string, daddr string, dareacode string, ts string, type string) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
  * 
@@ -44,7 +46,7 @@ public class HiveIndb {
 				System.out.println(sql);
 				ResultSet res = stmt.executeQuery(sql);
 				
-				
+				/*
 				sql = "insert into table tab_indb_cdr partition (time=\"1st\") select * from tab_indb_tmp where substr(ts,7,2)<=\"10\"";
 				res = stmt.executeQuery(sql);
 				
@@ -53,19 +55,19 @@ public class HiveIndb {
 				
 				sql = "insert into table tab_indb_cdr partition (time=\"3th\") select * from tab_indb_tmp where substr(ts,7,2)>\"20\"";
 				res = stmt.executeQuery(sql);
-				
+				*/
 				
 				/*
 				from tab_indb_tmp insert into table tab_indb_cdr partition(time="1st") select * where substr(ts,7,2)<="10"
 						          insert into table tab_indb_cdr partition(time="2ed") select * where substr(ts,7,2)>"10" and substr(ts,7,2)<="20"
 						          insert into table tab_indb_cdr partition(time="3th") select * where substr(ts,7,2)>"20";
 						       */
-				/*
+				
 				sql = "from tab_indb_tmp insert into table tab_indb_cdr partition(time=\"1st\") select * where substr(ts,7,2)<=\"10\" " + 
 				          "insert into table tab_indb_cdr partition(time=\"2ed\") select * where substr(ts,7,2)>\"10\" and substr(ts,7,2)<=\"20\" " +
 				          "insert into table tab_indb_cdr partition(time=\"3th\") select * where substr(ts,7,2)>\"20\"";
 				res = stmt.executeQuery(sql);
-				*/
+				
 				
 				File file = new File(fullfile);
 				file.delete();
@@ -76,11 +78,6 @@ public class HiveIndb {
 		}
 		
 		
-		
-		
-		
-	    
-
 	    //ResultSet res = stmt.executeQuery(sql);
 	    
 	}
