@@ -22,6 +22,7 @@ load data local inpath '/home/robby/a.txt' into table tab_name;
 describe tab_name;
 
 //
+drop table tab_cdr;
 create table tab_cdr(oaddr string, oareacode string, daddr string, dareacode string, ts string, type string) row format delimited fields terminated by ',';
 load data local inpath '/var/www/hadoop/testtool/output/cdr00.txt' into table tab_cdr;
 
